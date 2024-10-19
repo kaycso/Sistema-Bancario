@@ -19,27 +19,28 @@ class Transacao(ABC):
 class Deposito(Transacao):
     def registrar(self, conta):
         conta.depositar(self.valor)
-        conta.historico.adicionar_transacao(self)
+        conta.historico.adicionar_transacao(self, conta)
 
 
 class Saque(Transacao):
     def registrar(self, conta):
         conta.sacar(self.valor)
-        conta.historico.adicionar_transacao(self)
+        conta.historico.adicionar_transacao(self, conta)
 
 
 class Historico:
     def __init__(self):
         self._transacoes = []
-    
+
     @property
     def transacoes(self):
         return self._transacoes
 
-    def adicionar_transacao(self, transacao):
+    def adicionar_transacao(self, transacao, conta):
         self._transacoes.append({
             "tipo": transacao.__class__.__name__,
             "valor": transacao.valor,
+            "Saldo": conta.saldo
             # TODO implementar Data
         })
 
@@ -312,7 +313,25 @@ def sacar(usuarios):
 
 
 def exibir_extrato(usuarios):
-    pass
+    cpf = input("Insira o CPF do cliente: ")
+    usuario = filtrar_usuario(cpf, usuarios)
+    if not usuario:
+        print("@@@\t Usuário não encontrado!\t @@@")
+        return
+
+    conta = filtrar_conta(usuario)
+    if not conta:
+        print("@@@\t Operação Cancelada\t @@@")
+        return
+
+    print("=" * 30)
+    for transacao in conta.historico.transacoes:
+        print("")
+        for chave, valor in transacao.items():
+            print(f"{chave.title()}: {valor}")
+        print("-" * 30)
+    print("=" * 30)
+    
 
 
 def main():
